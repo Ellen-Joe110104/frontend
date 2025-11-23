@@ -8,22 +8,24 @@ import { useNavigate } from "react-router-dom"
 
 const AuthCallbackPage = () => {
 
-  const {isLoaded,user} = useUser();
+  const { isLoaded, user } = useUser();
   const navigate = useNavigate()
   const syncAttempted = useRef(false);
+  // const { songs, albums, fetchAlbums } = useMusicStore();
+
 
   useEffect(() => {
     const syncUser = async () => {
       try {
         syncAttempted.current = true;
-        
-        if(!isLoaded || !user) return;
 
-        await axiosInstance.post("/auth/callback", { 
-          id:user.id,
-          firstName:user.firstName,
-          lastName:user.lastName,
-          imageUrl:user.imageUrl
+        if (!isLoaded || !user) return;
+
+        await axiosInstance.post("/auth/callback", {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          imageUrl: user.imageUrl
         });
 
       } catch (error) {
@@ -34,7 +36,7 @@ const AuthCallbackPage = () => {
     };
 
     syncUser()
-  },[isLoaded,user,navigate])
+  }, [isLoaded, user, navigate])
 
   return (
     <div className="h-screen w-full bg-black flex items-center justify-center">
