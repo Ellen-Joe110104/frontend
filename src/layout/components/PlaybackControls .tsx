@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { Slider } from "@/components/ui/slider";
 
-import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1 } from "lucide-react";
+import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1, Repeat1 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 const formatTime = (seconds: number) => {
@@ -12,7 +12,7 @@ const formatTime = (seconds: number) => {
 };
 
 export default function PlaybackControls() {
-    const { currentSong, isPlaying, togglePlay, playNext, playPrevious } = usePlayerStore();
+    const { currentSong, isPlaying, togglePlay, playNext, playPrevious, isShuffle, repeatMode, toggleShuffle, toggleRepeat } = usePlayerStore();
 
     const [volume, setVolume] = useState(75);
     const [currentTime, setCurrentTime] = useState(0);
@@ -32,7 +32,17 @@ export default function PlaybackControls() {
         audio.addEventListener("loadedmetadata", updateDuration);
 
         const handleEnded = () => {
-            usePlayerStore.setState({ isPlaying: false });
+            // Check repeat mode directly from store or local logic
+            // Since we need the latest value, we can use usePlayerStore.getState()
+            const { repeatMode } = usePlayerStore.getState();
+            if (repeatMode === 'ONE') {
+                if (audioRef.current) {
+                    audioRef.current.currentTime = 0;
+                    audioRef.current.play();
+                }
+            } else {
+                playNext();
+            }
         };
 
         audio.addEventListener("ended", handleEnded);
@@ -43,7 +53,7 @@ export default function PlaybackControls() {
             audio.removeEventListener("ended", handleEnded);
         };
 
-    }, [currentSong]);
+    }, [currentSong]); // playNext dependency is stable
 
     const handleSeek = (value: number[]) => {
         if (audioRef.current) {
@@ -80,7 +90,8 @@ export default function PlaybackControls() {
                     <Button
                         size='icon'
                         variant='ghost'
-                        className='hidden sm:inline-flex hover:text-white text-zinc-400'
+                        className={`hidden sm:inline-flex hover:text-white ${isShuffle ? "text-green-500" : "text-zinc-400"}`}
+                        onClick={toggleShuffle}
                     >
                         <Shuffle className='h-4 w-4' />
                     </Button>
@@ -117,9 +128,14 @@ export default function PlaybackControls() {
                     <Button
                         size='icon'
                         variant='ghost'
-                        className='hidden sm:inline-flex hover:text-white text-zinc-400'
+                        className={`hidden sm:inline-flex hover:text-white ${repeatMode !== "OFF" ? "text-green-500" : "text-zinc-400"}`}
+                        onClick={toggleRepeat}
                     >
-                        <Repeat className='h-4 w-4' />
+                        {repeatMode === "ONE" ? (
+                            <Repeat1 className='h-4 w-4' />
+                        ) : (
+                            <Repeat className='h-4 w-4' />
+                        )}
                     </Button>
                 </div>
 
