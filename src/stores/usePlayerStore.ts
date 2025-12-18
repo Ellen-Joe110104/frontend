@@ -7,12 +7,18 @@ interface PlayerStore {
     queue: Song[];
     currentIndex: number;
 
+    isShuffle: boolean;
+    repeatMode: "OFF" | "ALL" | "ONE";
+    originalQueue: Song[]; // Keep track of original order
+
     initializeQueue: (songs: Song[]) => void;
     playAlbum: (songs: Song[], startIndex?: number) => void;
     setCurrentSong: (song: Song | null) => void;
     togglePlay: () => void;
     playNext: () => void;
     playPrevious: () => void;
+    toggleShuffle: () => void;
+    toggleRepeat: () => void;
 }
 
 export const usePlayerStore = create<PlayerStore>((set, get) => ({
@@ -20,11 +26,16 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     isPlaying: false,
     queue: [],
     currentIndex: -1,
+    isShuffle: false,
+    repeatMode: "OFF",
+    originalQueue: [],
+
     initializeQueue: (songs: Song[]) => {
         set({
             queue: songs,
+            originalQueue: songs,
             currentSong: get().currentSong || songs[0],
-            currentIndex: get().currentIndex === -1 ? 0 : get().currentIndex
+            currentIndex: get().currentIndex === -1 ? 0 : get().currentIndex,
         })
     },
     playAlbum: (songs: Song[], startIndex = 0) => {
@@ -34,9 +45,12 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 
         set({
             queue: songs,
+            originalQueue: songs,
             currentSong: song,
             currentIndex: startIndex,
-            isPlaying: true
+            isPlaying: true,
+            isShuffle: false,
+            repeatMode: "OFF",
         })
     },
     setCurrentSong: (song: Song | null) => {
@@ -56,11 +70,49 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
         });
     },
 
-    playNext: () => {
-        const { currentIndex, queue } = get()
-        const nextIndex = currentIndex + 1
+    toggleShuffle: () => {
+        const { isShuffle, originalQueue, currentSong } = get();
 
-        //if there is a next song, play it
+        if (!isShuffle) {
+            // Turning Shuffle ON
+            const shuffled = [...originalQueue].sort(() => Math.random() - 0.5);
+            const index = shuffled.findIndex((s) => s._id === currentSong?._id);
+            set({
+                isShuffle: true,
+                queue: shuffled,
+                currentIndex: index !== -1 ? index : 0,
+            });
+        } else {
+            // Turning Shuffle OFF: Restore original order
+            const index = originalQueue.findIndex((s) => s._id === currentSong?._id);
+            set({
+                isShuffle: false,
+                queue: originalQueue,
+                currentIndex: index !== -1 ? index : 0,
+            });
+        }
+    },
+
+    toggleRepeat: () => {
+        const { repeatMode } = get();
+        let newMode: "OFF" | "ALL" | "ONE" = "OFF";
+        if (repeatMode === "OFF") newMode = "ALL";
+        else if (repeatMode === "ALL") newMode = "ONE";
+        else newMode = "OFF";
+
+        set({ repeatMode: newMode });
+    },
+
+    playNext: () => {
+        const { currentIndex, queue, repeatMode } = get()
+        let nextIndex = currentIndex + 1
+
+        // Handle repeat all
+        if (repeatMode === "ALL" && nextIndex >= queue.length) {
+            nextIndex = 0;
+        }
+
+        // if there is a next song, play it
         if (nextIndex < queue.length) {
             const nextSong = queue[nextIndex]
             set({
@@ -69,7 +121,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
                 isPlaying: true,
             });
         } else {
-            // no next song
+            // no next song and not repeating
             set({
                 isPlaying: false,
             });
@@ -77,10 +129,15 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     },
 
     playPrevious: () => {
-        const { currentIndex, queue } = get();
-        const prevIndex = currentIndex - 1;
+        const { currentIndex, queue, repeatMode } = get();
+        let prevIndex = currentIndex - 1;
 
-        //there is a previous song
+        // Handle repeat all (wrap around)
+        if (repeatMode === "ALL" && prevIndex < 0) {
+            prevIndex = queue.length - 1;
+        }
+
+        // there is a previous song
         if (prevIndex >= 0) {
             const prevSong = queue[prevIndex];
             set({
