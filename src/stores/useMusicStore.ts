@@ -24,6 +24,8 @@ interface MusicStore {
     fetchSongs: () => Promise<void>;
     deleteSong: (id: string) => Promise<void>;
     deleteAlbum: (id: string) => Promise<void>;
+    search: (query: string) => Promise<void>;
+    searchResults: { songs: Song[], albums: Album[] };
 }
 
 export const useMusicStore = create<MusicStore>((set) => ({
@@ -40,6 +42,10 @@ export const useMusicStore = create<MusicStore>((set) => ({
         totalAlbums: 0,
         totalUsers: 0,
         totalArtists: 0
+    },
+    searchResults: {
+        songs: [],
+        albums: []
     },
 
     deleteSong: async (id) => {
@@ -162,6 +168,17 @@ export const useMusicStore = create<MusicStore>((set) => ({
         }
     },
 
+    search: async (query) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await axiosInstance.get(`/songs/search?query=${query}`);
+            set({ searchResults: response.data });
+        } catch (error: any) {
+            set({ error: error.response.data.message });
+        } finally {
+            set({ isLoading: false });
+        }
+    },
 }));
 
 
