@@ -1,12 +1,26 @@
 import TopBar from "@/components/TopBar"
 import { useMusicStore } from "@/stores/useMusicStore"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import FeaturedSection from "./components/FeaturedSection";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import SectionGrid from "./components/SectionGrid";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 
 const HomePage = () => {
+  const [greeting, setGreeting] = useState("Good Afternoon");
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      setGreeting("Good Morning");
+    } else if (hour >= 12 && hour < 17) {
+      setGreeting("Good Afternoon");
+    } else if (hour >= 17 && hour < 21) {
+      setGreeting("Good Evening");
+    } else {
+      setGreeting("Good Night");
+    }
+  }, []);
 
   const { fetchFeaturedSongs,
     fetchTrendingSongs,
@@ -39,7 +53,7 @@ const HomePage = () => {
       <ScrollArea className="h-[calc(100vh-180px)]">
         <div className="p-4 sm:p-6">
           <h1 className="text-2xl sm:text-3xl font-bold mb-6">
-            Good Afternoon
+            {greeting}
           </h1>
           <FeaturedSection />
 
@@ -48,8 +62,8 @@ const HomePage = () => {
             <SectionGrid title="Trending" songs={trendingSongs} isLoading={isLoading} />
           </div>
         </div>
-      </ScrollArea>
-    </div>
+      </ScrollArea >
+    </div >
   )
 }
 

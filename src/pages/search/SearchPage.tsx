@@ -1,4 +1,4 @@
-import Topbar from "@/components/TopBar";
+import Topbar from "@/components/Topbar";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { Play, Search } from "lucide-react";
 import { useEffect, useState } from "react";
