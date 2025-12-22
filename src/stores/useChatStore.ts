@@ -57,9 +57,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     initSocket: (userId) => {
         if (!get().isConnected) {
             socket.auth = { userId };
-            socket.connect();
+            socket.connect(); //Thiết lập kết nối real-time
 
-            socket.emit("user_connected", userId);
+            socket.emit("user_connected", userId); //Thông báo server user đã online
 
             socket.on("users_online", (users: string[]) => {
                 set({ onlineUsers: new Set(users) });
@@ -83,9 +83,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                 });
             });
 
-            socket.on("receive_message", (message: Message) => {
+            socket.on("receive_message", (message: Message) => { //Nhận tin nhắn từ server
                 set((state) => ({
-                    messages: [...state.messages, message],
+                    messages: [...state.messages, message], //Thêm tin nhắn vào store
                 }));
             });
 
@@ -118,7 +118,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         const socket = get().socket;
         if (!socket) return;
 
-        socket.emit("send_message", { receiverId, senderId, content });
+        socket.emit("send_message", { receiverId, senderId, content }); //Gửi tin nhắn đến server
     },
 
     fetchMessages: async (userId: string) => {
