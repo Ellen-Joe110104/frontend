@@ -5,12 +5,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Clock, Pause, Play } from "lucide-react";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { formatDuration } from "@/lib/utils";
 
-export const formatDuration = (duration: number) => {
-    const minutes = Math.floor(duration / 60);
-    const seconds = duration % 60;
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-}
 
 const AlbumPage = () => {
 

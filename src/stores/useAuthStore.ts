@@ -18,8 +18,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
     checkAdminStatus: async () => {
         set({ isLoading: true, error: null });
         try {
-            const response = await axiosInstance.get("/admin/check");
-            set({ isAdmin: response.data.admin });
+            const response = await axiosInstance.get("/admin/check"); //Kiểm tra admin permission
+            set({ isAdmin: response.data.admin }); //Cập nhật state admin
         } catch (error: any) {
             set({ isAdmin: false, error: null })
         } finally {

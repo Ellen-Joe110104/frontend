@@ -31,18 +31,18 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     },
 
     playAlbum: (songs: Song[], startIndex = 0) => {
-        if (songs.length === 0) return;
+        if (songs.length === 0) return; //Bắt đầu danh sách bài hát
 
         const song = songs[startIndex];
 
         const socket = useChatStore.getState().socket;
         if (socket.auth) {
-            socket.emit("update_activity", {
+            socket.emit("update_activity", { //Boardcast trạng thái phát nhạc
                 userId: socket.auth.userId,
                 activity: `Playing ${song.title} by ${song.artist}`,
             });
         }
-        set({
+        set({                         //Cập nhật queue và bài hát hiện tại
             queue: songs,
             currentSong: song,
             currentIndex: startIndex,

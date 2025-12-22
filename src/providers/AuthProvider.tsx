@@ -17,13 +17,14 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { initSocket, disconnectSocket } = useChatStore();
 
     useEffect(() => {
+        //Khởi tạo authentication (lấy token và kiểm tra admin status)
         const initAuth = async () => {
             try {
                 const token = await getToken();
-                updateApiToken(token);
+                updateApiToken(token); //Cập nhật API token (gắn JWT vào axios headers)
                 if (token) {
                     await checkAdminStatus();
-                    // init socket
+                    //Khởi tạo socket (kết nối socket cho real-time chat)
                     if (userId) initSocket(userId);
                 }
             } catch (error: any) {
